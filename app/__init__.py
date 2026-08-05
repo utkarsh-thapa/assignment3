@@ -14,6 +14,7 @@ def create_app(test_config=None):
 
     db.init_app(app)
 
+    from app import models
     from app.routes import main
 
     app.register_blueprint(main)
