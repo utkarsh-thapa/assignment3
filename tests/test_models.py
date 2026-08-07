@@ -124,3 +124,82 @@ def test_expected_tables_are_created(app):
     expected_tables = {"users", "events", "registrations"}
 
     assert expected_tables.issubset(db.metadata.tables.keys())
+
+
+def test_invalid_user_role_is_rejected(app):
+    user = User(
+        name="Invalid User",
+        email="invalid-role@example.com",
+        password_hash="hashed-password",
+        role="admin",
+    )
+
+    db.session.add(user)
+
+    with pytest.raises(IntegrityError):
+        db.session.commit()
+
+    db.session.rollback()
+
+
+@pytest.mark.parametrize("capacity", [0, -1])
+def test_non_positive_event_capacity_is_rejected(app, capacity):
+    charity = User(
+        name="Capacity Test Charity",
+        email=f"capacity-{capacity}@example.com",
+        password_hash="hashed-password",
+        role="charity",
+    )
+    event = Event(
+        title="Invalid Capacity Event",
+        description="Testing an invalid event capacity.",
+        date_time=datetime.now() + timedelta(days=7),
+        location="Community Hall",
+        capacity=capacity,
+        charity=charity,
+    )
+
+    db.session.add_all([charity, event])
+
+    with pytest.raises(IntegrityError):
+        db.session.commit()
+
+    db.session.rollback()
+
+
+def test_invalid_registration_status_is_rejected(app):
+    charity = User(
+        name="Status Test Charity",
+        email="status-charity@example.com",
+        password_hash="hashed-password",
+        role="charity",
+    )
+    student = User(
+        name="Status Test Student",
+        email="status-student@example.com",
+        password_hash="hashed-password",
+        role="student",
+    )
+    event = Event(
+        title="Status Test Event",
+        description="Testing an invalid registration status.",
+        date_time=datetime.now() + timedelta(days=7),
+        location="Community Hall",
+        capacity=10,
+        charity=charity,
+    )
+
+    db.session.add_all([charity, student, event])
+    db.session.commit()
+
+    registration = Registration(
+        student=student,
+        event=event,
+        status="pending",
+    )
+    db.session.add(registration)
+
+    with pytest.raises(IntegrityError):
+        db.session.commit()
+
+    db.session.rollback()

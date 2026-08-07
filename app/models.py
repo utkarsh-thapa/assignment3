@@ -20,6 +20,7 @@ class User(db.Model):
     )
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False)
+
     events = db.relationship("Event", back_populates="charity")
     registrations = db.relationship(
         "Registration",
@@ -28,6 +29,8 @@ class User(db.Model):
 
 
 class Event(db.Model):
+    """Charity ownership is enforced by server-side event routes."""
+
     __tablename__ = "events"
     __table_args__ = (
         db.CheckConstraint(
@@ -57,6 +60,8 @@ class Event(db.Model):
 
 
 class Registration(db.Model):
+    """Student eligibility is enforced by server-side registration routes."""
+
     __tablename__ = "registrations"
     __table_args__ = (
         db.UniqueConstraint(
