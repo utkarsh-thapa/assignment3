@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Account | Community Volunteer Board{% endblock %}
+
+{% macro render_errors(field) %}
+  {% if field.errors %}
+    <ul class="field-errors">
+      {% for error in field.errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endmacro %}
+
+{% block content %}
+  {% if current_user.is_authenticated %}
+    <section class="card account-summary">
+      <p class="eyebrow">Signed in</p>
+      <h1>Welcome, {{ current_user.name }}</h1>
+      <p>Your account type is <strong>{{ current_user.role|capitalize }}</strong>.</p>
+      <a class="button" href="{{ url_for('main.dashboard') }}">Open dashboard</a>
+    </section>
+  {% else %}
+    <section class="hero">
+      <p class="eyebrow">Volunteer locally</p>
+      <h1>Community Volunteer Board</h1>
+      <p>Create an account or log in to discover and organise local volunteer events.</p>
+    </section>
+
+    <div class="account-grid">
+      <section class="card">
+        <h2>Create account</h2>
+        <form action="{{ url_for('main.register') }}" method="post" novalidate>
+          {{ registration_form.hidden_tag() }}
+
+          {{ registration_form.name.label }}
+          {{ registration_form.name(autocomplete="name") }}
+          {{ render_errors(registration_form.name) }}
+
+          {{ registration_form.email.label }}
+          {{ registration_form.email(autocomplete="email") }}
+          {{ render_errors(registration_form.email) }}
+
+          {{ registration_form.password.label }}
+          {{ registration_form.password(autocomplete="new-password") }}
+          <p class="field-help">Use at least 8 characters.</p>
+          {{ render_errors(registration_form.password) }}
+
+          <fieldset>
+            <legend>{{ registration_form.role.label.text }}</legend>
+            {% for option in registration_form.role %}
+              <label class="radio-option">{{ option() }} {{ option.label.text }}</label>
+            {% endfor %}
+          </fieldset>
+          {{ render_errors(registration_form.role) }}
+
+          {{ registration_form.submit(class="button") }}
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Log in</h2>
+        <form action="{{ url_for('main.login') }}" method="post" novalidate>
+          {{ login_form.hidden_tag() }}
+
+          {{ login_form.email.label }}
+          {{ login_form.email(autocomplete="email") }}
+          {{ render_errors(login_form.email) }}
+
+          {{ login_form.password.label }}
+          {{ login_form.password(autocomplete="current-password") }}
+          {{ render_errors(login_form.password) }}
+
+          {{ login_form.submit(class="button") }}
+        </form>
+      </section>
+    </div>
+  {% endif %}
+{% endblock %}

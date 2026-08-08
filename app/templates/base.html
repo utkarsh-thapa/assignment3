@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Community Volunteer Board{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="{{ url_for('main.account') }}">Community Volunteer Board</a>
+      {% if current_user.is_authenticated %}
+        <form action="{{ url_for('main.logout') }}" method="post">
+          {{ logout_form.hidden_tag() }}
+          {{ logout_form.submit(class="button button-secondary") }}
+        </form>
+      {% endif %}
+    </header>
+
+    <main class="page-shell">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div aria-live="polite">
+            {% for category, message in messages %}
+              <p class="notice notice-{{ category }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>
