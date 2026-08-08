@@ -1,3 +1,4 @@
+from werkzeug.security import check_password_hash, generate_password_hash
 from app import db
 
 
@@ -27,6 +28,16 @@ class User(db.Model):
         back_populates="student",
     )
 
+    def set_password(self, password):
+        """Store a secure hash instead of the readable password."""
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        """Return whether a submitted password matches the stored hash."""
+        return bool(self.password_hash) and check_password_hash(
+            self.password_hash,
+            password,
+        )
 
 class Event(db.Model):
     """Charity ownership is enforced by server-side event routes."""
