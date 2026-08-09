@@ -62,6 +62,10 @@ class LogoutForm(FlaskForm):
     submit = SubmitField("Log out")
 
 
+class EventRegistrationForm(FlaskForm):
+    submit = SubmitField("Register for this event")
+
+
 class EventForm(FlaskForm):
     title = StringField(
         "Title",
