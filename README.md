@@ -14,9 +14,10 @@ students to browse events and register for shifts.
 ## Current status
 
 The Flask application foundation, User, Event and Registration database models,
-and secure account authentication are complete. Students and Charities can
-create accounts, log in, log out and access a protected dashboard. Event
-creation, browsing and volunteer registration will be added in later issues.
+secure account authentication, role-based dashboard and Charity event creation
+are complete. Charities can publish validated future events, while Students can
+browse upcoming opportunities and open their details. Student registration for
+events and Charity registration viewing will be added in later issues.
 
 ## Run the application
 

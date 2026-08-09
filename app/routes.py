@@ -5,7 +5,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy.exc import IntegrityError
 
 from app import db
-from app.forms import LoginForm, LogoutForm, RegistrationForm
+from app.forms import EventForm, LoginForm, LogoutForm, RegistrationForm
 from app.models import Event, User
 
 main = Blueprint("main", __name__)
@@ -37,7 +37,9 @@ def register():
 
     if registration_form.validate_on_submit():
         email = registration_form.email.data.strip().lower()
-        existing_user = db.session.scalar(db.select(User).where(User.email == email))
+        existing_user = db.session.scalar(
+            db.select(User).where(User.email == email)
+        )
 
         if existing_user is not None:
             registration_form.email.errors.append(
@@ -121,6 +123,7 @@ def logout():
 @login_required
 def dashboard():
     events = []
+    event_form = None
 
     if current_user.role == "student":
         events = db.session.scalars(
@@ -134,11 +137,61 @@ def dashboard():
             .where(Event.charity_id == current_user.id)
             .order_by(Event.date_time.asc())
         ).all()
+        event_form = EventForm(prefix="event")
 
     return render_template(
         "dashboard.html",
         events=events,
+        event_form=event_form,
         logout_form=LogoutForm(),
+    )
+
+
+@main.post("/events")
+@login_required
+def create_event():
+    if current_user.role != "charity":
+        abort(403)
+
+    event_form = EventForm(prefix="event")
+
+    if event_form.validate_on_submit():
+        event = Event(
+            title=event_form.title.data,
+            description=event_form.description.data,
+            date_time=event_form.date_time.data,
+            location=event_form.location.data,
+            capacity=event_form.capacity.data,
+            charity_id=current_user.id,
+        )
+        db.session.add(event)
+
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash(
+                "Unable to create the event. Please check the details.",
+                "error",
+            )
+        else:
+            flash("Event created successfully.", "success")
+            return redirect(url_for("main.dashboard"))
+
+    events = db.session.scalars(
+        db.select(Event)
+        .where(Event.charity_id == current_user.id)
+        .order_by(Event.date_time.asc())
+    ).all()
+
+    return (
+        render_template(
+            "dashboard.html",
+            events=events,
+            event_form=event_form,
+            logout_form=LogoutForm(),
+        ),
+        400,
     )
 
 

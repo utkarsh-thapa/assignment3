@@ -111,6 +111,11 @@ h1 {
   margin-top: 1rem;
 }
 
+.event-form-panel {
+  max-width: 48rem;
+  margin-bottom: 2.5rem;
+}
+
 form {
   display: grid;
   gap: 0.55rem;
@@ -123,13 +128,21 @@ legend {
 
 input[type="text"],
 input[type="email"],
-input[type="password"] {
+input[type="password"],
+input[type="datetime-local"],
+input[type="number"],
+textarea {
   width: 100%;
   margin-bottom: 0.65rem;
   padding: 0.8rem;
   border: 1px solid #8ca9a0;
   border-radius: 0.55rem;
   font: inherit;
+}
+
+textarea {
+  min-height: 8rem;
+  resize: vertical;
 }
 
 input:focus-visible,
