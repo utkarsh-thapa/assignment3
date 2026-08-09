@@ -1,6 +1,28 @@
+from datetime import datetime
+
 from flask_wtf import FlaskForm
-from wtforms import EmailField, PasswordField, RadioField, StringField, SubmitField
-from wtforms.validators import DataRequired, Email, Length
+from wtforms import (
+    DateTimeLocalField,
+    EmailField,
+    IntegerField,
+    PasswordField,
+    RadioField,
+    StringField,
+    SubmitField,
+    TextAreaField,
+)
+from wtforms.validators import (
+    DataRequired,
+    Email,
+    InputRequired,
+    Length,
+    NumberRange,
+    ValidationError,
+)
+
+
+def _strip_whitespace(value):
+    return value.strip() if isinstance(value, str) else value
 
 
 class RegistrationForm(FlaskForm):
@@ -38,3 +60,37 @@ class LoginForm(FlaskForm):
 
 class LogoutForm(FlaskForm):
     submit = SubmitField("Log out")
+
+
+class EventForm(FlaskForm):
+    title = StringField(
+        "Title",
+        filters=[_strip_whitespace],
+        validators=[DataRequired(), Length(min=2, max=150)],
+    )
+    description = TextAreaField(
+        "Description",
+        filters=[_strip_whitespace],
+        validators=[DataRequired(), Length(min=10, max=2000)],
+    )
+    date_time = DateTimeLocalField(
+        "Date and time",
+        format="%Y-%m-%dT%H:%M",
+        validators=[DataRequired()],
+    )
+    location = StringField(
+        "Location",
+        filters=[_strip_whitespace],
+        validators=[DataRequired(), Length(max=255)],
+    )
+    capacity = IntegerField(
+        "Capacity",
+        validators=[InputRequired(), NumberRange(min=1, max=10000)],
+    )
+    submit = SubmitField("Create event")
+
+    def validate_date_time(self, field):
+        if field.data is not None and field.data <= datetime.now():
+            raise ValidationError(
+                "The event date and time must be in the future."
+            )

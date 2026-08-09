@@ -2,6 +2,16 @@
 
 {% block title %}Dashboard | Community Volunteer Board{% endblock %}
 
+{% macro render_errors(field) %}
+  {% if field.errors %}
+    <ul class="field-errors">
+      {% for error in field.errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endmacro %}
+
 {% block content %}
   <section class="dashboard-heading">
     <p class="eyebrow">{{ current_user.role|capitalize }} dashboard</p>
@@ -17,15 +27,25 @@
           {% for event in events %}
             <article class="card event-card">
               <h3>{{ event.title }}</h3>
-              <p><strong>Date:</strong> {{ event.date_time.strftime("%d %B %Y, %I:%M %p") }}</p>
+              <p>
+                <strong>Date:</strong>
+                {{ event.date_time.strftime("%d %B %Y, %I:%M %p") }}
+              </p>
               <p><strong>Location:</strong> {{ event.location }}</p>
               <p><strong>Capacity:</strong> {{ event.capacity }}</p>
+
               {% if event.is_past %}
                 <p><strong>Status:</strong> Past event</p>
               {% else %}
                 <p><strong>Available places:</strong> {{ event.available_places }}</p>
               {% endif %}
-              <a class="button" href="{{ url_for('main.event_details', event_id=event.id) }}">View details</a>
+
+              <a
+                class="button"
+                href="{{ url_for('main.event_details', event_id=event.id) }}"
+              >
+                View details
+              </a>
             </article>
           {% endfor %}
         </div>
@@ -33,7 +53,41 @@
         <p>No upcoming volunteer events are available.</p>
       {% endif %}
     </section>
+
   {% elif current_user.role == "charity" %}
+    <section
+      class="card event-form-panel"
+      aria-labelledby="create-event-heading"
+    >
+      <h2 id="create-event-heading">Create volunteer event</h2>
+
+      <form action="{{ url_for('main.create_event') }}" method="post" novalidate>
+        {{ event_form.hidden_tag() }}
+
+        {{ event_form.title.label }}
+        {{ event_form.title(autocomplete="off") }}
+        {{ render_errors(event_form.title) }}
+
+        {{ event_form.description.label }}
+        {{ event_form.description(rows=5) }}
+        {{ render_errors(event_form.description) }}
+
+        {{ event_form.date_time.label }}
+        {{ event_form.date_time() }}
+        {{ render_errors(event_form.date_time) }}
+
+        {{ event_form.location.label }}
+        {{ event_form.location(autocomplete="off") }}
+        {{ render_errors(event_form.location) }}
+
+        {{ event_form.capacity.label }}
+        {{ event_form.capacity(min=1, max=10000, inputmode="numeric") }}
+        {{ render_errors(event_form.capacity) }}
+
+        {{ event_form.submit(class="button") }}
+      </form>
+    </section>
+
     <section aria-labelledby="charity-events-heading">
       <h2 id="charity-events-heading">Your charity events</h2>
 
@@ -42,15 +96,25 @@
           {% for event in events %}
             <article class="card event-card">
               <h3>{{ event.title }}</h3>
-              <p><strong>Date:</strong> {{ event.date_time.strftime("%d %B %Y, %I:%M %p") }}</p>
+              <p>
+                <strong>Date:</strong>
+                {{ event.date_time.strftime("%d %B %Y, %I:%M %p") }}
+              </p>
               <p><strong>Location:</strong> {{ event.location }}</p>
               <p><strong>Capacity:</strong> {{ event.capacity }}</p>
+
               {% if event.is_past %}
                 <p><strong>Status:</strong> Past event</p>
               {% else %}
                 <p><strong>Available places:</strong> {{ event.available_places }}</p>
               {% endif %}
-              <a class="button" href="{{ url_for('main.event_details', event_id=event.id) }}">View details</a>
+
+              <a
+                class="button"
+                href="{{ url_for('main.event_details', event_id=event.id) }}"
+              >
+                View details
+              </a>
             </article>
           {% endfor %}
         </div>
