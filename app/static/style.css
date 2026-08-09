@@ -107,8 +107,9 @@ h1 {
   max-width: 48rem;
 }
 
-.event-details .button {
-  margin-top: 1rem;
+.event-details > .button {
+  display: inline-block;
+  margin-top: 1.5rem;
 }
 
 .registration-panel {
@@ -121,6 +122,19 @@ h1 {
 
 .registration-panel p {
   margin-bottom: 0;
+}
+
+.registration-list {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #b9cec5;
+}
+
+.registration-list ul {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 0;
+  padding-left: 1.25rem;
 }
 
 .event-form-panel {

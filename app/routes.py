@@ -231,6 +231,7 @@ def event_details(event_id):
 
     registration = None
     registration_form = None
+    registered_student_names = None
 
     if current_user.role == "student":
         registration = db.session.scalar(
@@ -242,12 +243,26 @@ def event_details(event_id):
         registration_form = EventRegistrationForm(
             prefix="event-registration"
         )
+    elif current_user.role == "charity":
+        registered_student_names = db.session.scalars(
+            db.select(User.name)
+            .join(
+                Registration,
+                Registration.student_id == User.id,
+            )
+            .where(
+                Registration.event_id == event.id,
+                Registration.status == "registered",
+            )
+            .order_by(User.name.asc(), User.id.asc())
+        ).all()
 
     return render_template(
         "event_details.html",
         event=event,
         registration=registration,
         registration_form=registration_form,
+        registered_student_names=registered_student_names,
         logout_form=LogoutForm(),
     )
 

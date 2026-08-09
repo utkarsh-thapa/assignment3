@@ -21,7 +21,10 @@ are available. Duplicate, full and past-event registrations are rejected by the
 server. To prevent simultaneous requests from overbooking the final place,
 SQLite obtains a write reservation before capacity is read and holds it through
 the registration insert. Other supported databases use a row-level event lock.
-Charity registration viewing will be added in a later issue.
+An event-owning Charity can view the names of its actively registered Students
+on the Event Details screen. This list is protected by a server-side ownership
+check, is hidden from Students and other Charities, and queries no Student email
+or other unnecessary personal information.
 
 ## Run the application
 
