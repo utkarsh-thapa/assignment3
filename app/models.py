@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -71,6 +73,18 @@ class Event(db.Model):
         "Registration",
         back_populates="event",
     )
+
+    @property
+    def available_places(self):
+        registered_count = sum(
+            registration.status == "registered"
+            for registration in self.registrations
+        )
+        return max(self.capacity - registered_count, 0)
+
+    @property
+    def is_past(self):
+        return self.date_time < datetime.now()
 
 
 class Registration(db.Model):

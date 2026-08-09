@@ -3,9 +3,60 @@
 {% block title %}Dashboard | Community Volunteer Board{% endblock %}
 
 {% block content %}
-  <section class="card account-summary">
+  <section class="dashboard-heading">
     <p class="eyebrow">{{ current_user.role|capitalize }} dashboard</p>
     <h1>Welcome, {{ current_user.name }}</h1>
-    <p>Your secure account is ready. Event features will be added in the next backlog item.</p>
   </section>
+
+  {% if current_user.role == "student" %}
+    <section aria-labelledby="upcoming-events-heading">
+      <h2 id="upcoming-events-heading">Upcoming volunteer events</h2>
+
+      {% if events %}
+        <div class="event-list">
+          {% for event in events %}
+            <article class="card event-card">
+              <h3>{{ event.title }}</h3>
+              <p><strong>Date:</strong> {{ event.date_time.strftime("%d %B %Y, %I:%M %p") }}</p>
+              <p><strong>Location:</strong> {{ event.location }}</p>
+              <p><strong>Capacity:</strong> {{ event.capacity }}</p>
+              {% if event.is_past %}
+                <p><strong>Status:</strong> Past event</p>
+              {% else %}
+                <p><strong>Available places:</strong> {{ event.available_places }}</p>
+              {% endif %}
+              <a class="button" href="{{ url_for('main.event_details', event_id=event.id) }}">View details</a>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>No upcoming volunteer events are available.</p>
+      {% endif %}
+    </section>
+  {% elif current_user.role == "charity" %}
+    <section aria-labelledby="charity-events-heading">
+      <h2 id="charity-events-heading">Your charity events</h2>
+
+      {% if events %}
+        <div class="event-list">
+          {% for event in events %}
+            <article class="card event-card">
+              <h3>{{ event.title }}</h3>
+              <p><strong>Date:</strong> {{ event.date_time.strftime("%d %B %Y, %I:%M %p") }}</p>
+              <p><strong>Location:</strong> {{ event.location }}</p>
+              <p><strong>Capacity:</strong> {{ event.capacity }}</p>
+              {% if event.is_past %}
+                <p><strong>Status:</strong> Past event</p>
+              {% else %}
+                <p><strong>Available places:</strong> {{ event.available_places }}</p>
+              {% endif %}
+              <a class="button" href="{{ url_for('main.event_details', event_id=event.id) }}">Manage event</a>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>You have not created any volunteer events yet.</p>
+      {% endif %}
+    </section>
+  {% endif %}
 {% endblock %}
