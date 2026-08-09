@@ -2,6 +2,7 @@ from datetime import datetime
 
 from flask import Blueprint, abort, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 from app import db
@@ -19,6 +20,22 @@ main = Blueprint("main", __name__)
 
 def _account_forms():
     return RegistrationForm(prefix="register"), LoginForm(prefix="login")
+
+
+def _lock_event_for_registration(event_id):
+    """Lock capacity changes until the registration transaction finishes."""
+    db.session.rollback()
+
+    if db.engine.dialect.name == "sqlite":
+        # SQLite has no row-level SELECT FOR UPDATE. BEGIN IMMEDIATE obtains
+        # the write reservation before capacity is read, so another request
+        # must wait and then observe the committed registration count.
+        db.session.execute(text("BEGIN IMMEDIATE"))
+        return db.session.get(Event, event_id)
+
+    return db.session.scalar(
+        db.select(Event).where(Event.id == event_id).with_for_update()
+    )
 
 
 @main.get("/")
@@ -241,33 +258,41 @@ def register_for_event(event_id):
     if current_user.role != "student":
         abort(403)
 
-    event = db.get_or_404(Event, event_id)
-
-    if event.is_past:
-        abort(404)
-
+    student_id = current_user.id
     registration_form = EventRegistrationForm(
         prefix="event-registration"
     )
     if not registration_form.validate_on_submit():
         return "Invalid or expired form submission. Please try again.", 400
 
+    event = _lock_event_for_registration(event_id)
+
+    if event is None:
+        db.session.rollback()
+        abort(404)
+
+    if event.is_past:
+        db.session.rollback()
+        abort(404)
+
     existing_registration = db.session.scalar(
         db.select(Registration).where(
-            Registration.student_id == current_user.id,
+            Registration.student_id == student_id,
             Registration.event_id == event.id,
         )
     )
     if existing_registration is not None:
+        db.session.rollback()
         flash("You are already registered for this event.", "error")
         return redirect(url_for("main.event_details", event_id=event.id))
 
     if event.available_places <= 0:
+        db.session.rollback()
         flash("This event is full.", "error")
         return redirect(url_for("main.event_details", event_id=event.id))
 
     registration = Registration(
-        student_id=current_user.id,
+        student_id=student_id,
         event_id=event.id,
         status="registered",
     )

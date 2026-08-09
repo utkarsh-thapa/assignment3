@@ -1,4 +1,5 @@
 import re
+import threading
 from datetime import datetime, timedelta
 
 import pytest
@@ -118,6 +119,88 @@ def test_duplicate_registration_is_rejected(app, client):
     assert b"You are already registered for this event." in response.data
     with app.app_context():
         assert db.session.query(Registration).count() == 1
+
+
+def test_simultaneous_requests_cannot_overbook_final_place(tmp_path):
+    database_path = tmp_path / "concurrent-registration.db"
+    concurrent_app = create_app(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": f"sqlite:///{database_path}",
+            "WTF_CSRF_ENABLED": False,
+        }
+    )
+
+    with concurrent_app.app_context():
+        db.create_all()
+        charity = User(
+            name="Concurrency Charity",
+            email="concurrency-charity@example.com",
+            role="charity",
+        )
+        charity.set_password("SecurePassword123!")
+        first_student = User(
+            name="First Concurrent Student",
+            email="concurrency-first@example.com",
+            role="student",
+        )
+        first_student.set_password("SecurePassword123!")
+        second_student = User(
+            name="Second Concurrent Student",
+            email="concurrency-second@example.com",
+            role="student",
+        )
+        second_student.set_password("SecurePassword123!")
+        db.session.add_all([charity, first_student, second_student])
+        db.session.flush()
+        event = Event(
+            title="Final Place Event",
+            description="An event with one place for a concurrency test.",
+            date_time=datetime.now() + timedelta(days=7),
+            location="Concurrency Test Hall",
+            capacity=1,
+            charity_id=charity.id,
+        )
+        db.session.add(event)
+        db.session.commit()
+        event_id = event.id
+
+    clients = [concurrent_app.test_client(), concurrent_app.test_client()]
+    emails = [
+        "concurrency-first@example.com",
+        "concurrency-second@example.com",
+    ]
+    for concurrent_client, email in zip(clients, emails):
+        login(concurrent_client, email)
+
+    start_barrier = threading.Barrier(2)
+    responses = []
+
+    def submit_registration(concurrent_client):
+        start_barrier.wait()
+        response = concurrent_client.post(
+            f"/events/{event_id}/register",
+            data=registration_data(),
+        )
+        responses.append(response.status_code)
+
+    threads = [
+        threading.Thread(target=submit_registration, args=(client,))
+        for client in clients
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=10)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert responses == [302, 302]
+    with concurrent_app.app_context():
+        assert db.session.query(Registration).count() == 1
+        saved_event = db.session.get(Event, event_id)
+        assert saved_event.available_places == 0
+        db.session.remove()
+        db.drop_all()
 
 
 def test_registration_for_full_event_is_rejected(app, client):

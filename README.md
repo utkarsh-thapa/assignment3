@@ -18,7 +18,10 @@ secure account authentication, role-based dashboard and Charity event creation
 are complete. Charities can publish validated future events, while Students can
 browse upcoming opportunities, open their details and register once when places
 are available. Duplicate, full and past-event registrations are rejected by the
-server. Charity registration viewing will be added in a later issue.
+server. To prevent simultaneous requests from overbooking the final place,
+SQLite obtains a write reservation before capacity is read and holds it through
+the registration insert. Other supported databases use a row-level event lock.
+Charity registration viewing will be added in a later issue.
 
 ## Run the application
 
