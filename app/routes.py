@@ -1,10 +1,12 @@
-from flask import Blueprint, flash, redirect, render_template, url_for
+from datetime import datetime
+
+from flask import Blueprint, abort, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy.exc import IntegrityError
 
 from app import db
 from app.forms import LoginForm, LogoutForm, RegistrationForm
-from app.models import User
+from app.models import Event, User
 
 main = Blueprint("main", __name__)
 
@@ -118,4 +120,41 @@ def logout():
 @main.get("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html", logout_form=LogoutForm())
+    events = []
+
+    if current_user.role == "student":
+        events = db.session.scalars(
+            db.select(Event)
+            .where(Event.date_time >= datetime.now())
+            .order_by(Event.date_time.asc())
+        ).all()
+    elif current_user.role == "charity":
+        events = db.session.scalars(
+            db.select(Event)
+            .where(Event.charity_id == current_user.id)
+            .order_by(Event.date_time.asc())
+        ).all()
+
+    return render_template(
+        "dashboard.html",
+        events=events,
+        logout_form=LogoutForm(),
+    )
+
+
+@main.get("/events/<int:event_id>")
+@login_required
+def event_details(event_id):
+    event = db.get_or_404(Event, event_id)
+
+    if current_user.role == "student" and event.is_past:
+        abort(404)
+
+    if current_user.role == "charity" and event.charity_id != current_user.id:
+        abort(403)
+
+    return render_template(
+        "event_details.html",
+        event=event,
+        logout_form=LogoutForm(),
+    )

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} | Community Volunteer Board{% endblock %}
+
+{% block content %}
+  <section class="event-details" aria-labelledby="event-title">
+    <p class="eyebrow">Event details</p>
+    <h1 id="event-title">{{ event.title }}</h1>
+    <p>{{ event.description }}</p>
+    <p><strong>Date:</strong> {{ event.date_time.strftime("%d %B %Y, %I:%M %p") }}</p>
+    <p><strong>Location:</strong> {{ event.location }}</p>
+    <p><strong>Capacity:</strong> {{ event.capacity }}</p>
+
+    {% if event.is_past %}
+      <p><strong>Status:</strong> Past event</p>
+    {% else %}
+      <p><strong>Available places:</strong> {{ event.available_places }}</p>
+    {% endif %}
+
+    <a class="button" href="{{ url_for('main.dashboard') }}">Back to dashboard</a>
+  </section>
+{% endblock %}

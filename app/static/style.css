@@ -78,6 +78,39 @@ h1 {
   max-width: 44rem;
 }
 
+.dashboard-heading {
+  margin-bottom: 2rem;
+}
+
+.event-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem;
+}
+
+.event-card {
+  display: flex;
+  min-height: 19rem;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.event-card h3 {
+  margin-top: 0;
+}
+
+.event-card .button {
+  margin-top: auto;
+}
+
+.event-details {
+  max-width: 48rem;
+}
+
+.event-details .button {
+  margin-top: 1rem;
+}
+
 form {
   display: grid;
   gap: 0.55rem;
