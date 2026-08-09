@@ -35,6 +35,21 @@
       </div>
     {% endif %}
 
+    {% if current_user.role == "charity" %}
+      <section class="registration-list" aria-labelledby="registration-list-title">
+        <h2 id="registration-list-title">Registered Students</h2>
+        {% if registered_student_names %}
+          <ul>
+            {% for student_name in registered_student_names %}
+              <li>{{ student_name }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No students have registered for this event yet.</p>
+        {% endif %}
+      </section>
+    {% endif %}
+
     <a class="button" href="{{ url_for('main.dashboard') }}">Back to dashboard</a>
   </section>
 {% endblock %}
