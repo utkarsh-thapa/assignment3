@@ -7,6 +7,7 @@
     <p class="eyebrow">Event details</p>
     <h1 id="event-title">{{ event.title }}</h1>
     <p>{{ event.description }}</p>
+    <p><strong>Charity:</strong> {{ event.charity.name }}</p>
     <p><strong>Date:</strong> {{ event.date_time.strftime("%d %B %Y, %I:%M %p") }}</p>
     <p><strong>Location:</strong> {{ event.location }}</p>
     <p><strong>Capacity:</strong> {{ event.capacity }}</p>
@@ -15,6 +16,23 @@
       <p><strong>Status:</strong> Past event</p>
     {% else %}
       <p><strong>Available places:</strong> {{ event.available_places }}</p>
+    {% endif %}
+
+    {% if current_user.role == "student" and not event.is_past %}
+      <div class="registration-panel">
+        {% if registration and registration.status == "registered" %}
+          <p><strong>You are registered for this event.</strong></p>
+        {% elif registration %}
+          <p><strong>Your registration is not active.</strong></p>
+        {% elif event.available_places == 0 %}
+          <p><strong>This event is full.</strong></p>
+        {% else %}
+          <form action="{{ url_for('main.register_for_event', event_id=event.id) }}" method="post">
+            {{ registration_form.hidden_tag() }}
+            {{ registration_form.submit(class="button") }}
+          </form>
+        {% endif %}
+      </div>
     {% endif %}
 
     <a class="button" href="{{ url_for('main.dashboard') }}">Back to dashboard</a>

@@ -111,6 +111,18 @@ h1 {
   margin-top: 1rem;
 }
 
+.registration-panel {
+  margin: 1.5rem 0 0.5rem;
+  padding: 1rem;
+  border: 1px solid #d5e5dd;
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.registration-panel p {
+  margin-bottom: 0;
+}
+
 .event-form-panel {
   max-width: 48rem;
   margin-bottom: 2.5rem;

@@ -5,8 +5,14 @@ from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy.exc import IntegrityError
 
 from app import db
-from app.forms import EventForm, LoginForm, LogoutForm, RegistrationForm
-from app.models import Event, User
+from app.forms import (
+    EventForm,
+    EventRegistrationForm,
+    LoginForm,
+    LogoutForm,
+    RegistrationForm,
+)
+from app.models import Event, Registration, User
 
 main = Blueprint("main", __name__)
 
@@ -206,8 +212,77 @@ def event_details(event_id):
     if current_user.role == "charity" and event.charity_id != current_user.id:
         abort(403)
 
+    registration = None
+    registration_form = None
+
+    if current_user.role == "student":
+        registration = db.session.scalar(
+            db.select(Registration).where(
+                Registration.student_id == current_user.id,
+                Registration.event_id == event.id,
+            )
+        )
+        registration_form = EventRegistrationForm(
+            prefix="event-registration"
+        )
+
     return render_template(
         "event_details.html",
         event=event,
+        registration=registration,
+        registration_form=registration_form,
         logout_form=LogoutForm(),
     )
+
+
+@main.post("/events/<int:event_id>/register")
+@login_required
+def register_for_event(event_id):
+    if current_user.role != "student":
+        abort(403)
+
+    event = db.get_or_404(Event, event_id)
+
+    if event.is_past:
+        abort(404)
+
+    registration_form = EventRegistrationForm(
+        prefix="event-registration"
+    )
+    if not registration_form.validate_on_submit():
+        return "Invalid or expired form submission. Please try again.", 400
+
+    existing_registration = db.session.scalar(
+        db.select(Registration).where(
+            Registration.student_id == current_user.id,
+            Registration.event_id == event.id,
+        )
+    )
+    if existing_registration is not None:
+        flash("You are already registered for this event.", "error")
+        return redirect(url_for("main.event_details", event_id=event.id))
+
+    if event.available_places <= 0:
+        flash("This event is full.", "error")
+        return redirect(url_for("main.event_details", event_id=event.id))
+
+    registration = Registration(
+        student_id=current_user.id,
+        event_id=event.id,
+        status="registered",
+    )
+    db.session.add(registration)
+
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash(
+            "Unable to register. You may already be registered or the "
+            "event may no longer be available.",
+            "error",
+        )
+    else:
+        flash("You are registered for this event.", "success")
+
+    return redirect(url_for("main.event_details", event_id=event.id))

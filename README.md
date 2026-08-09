@@ -16,8 +16,9 @@ students to browse events and register for shifts.
 The Flask application foundation, User, Event and Registration database models,
 secure account authentication, role-based dashboard and Charity event creation
 are complete. Charities can publish validated future events, while Students can
-browse upcoming opportunities and open their details. Student registration for
-events and Charity registration viewing will be added in later issues.
+browse upcoming opportunities, open their details and register once when places
+are available. Duplicate, full and past-event registrations are rejected by the
+server. Charity registration viewing will be added in a later issue.
 
 ## Run the application
 
