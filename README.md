@@ -153,13 +153,22 @@ sequenceDiagram
         Security-->>Student: Redirect, HTTP 400 or HTTP 403
     else Request is valid
         Route->>Database: Begin protected transaction and lock Event capacity
-        Database-->>Route: Event, duplicate status and active registration count
-        alt Event is past, full or already registered
+        Database-->>Route: Event or not-found result
+        alt Event does not exist or is past
             Route->>Database: Roll back transaction
-            Route-->>Student: Safe rejection message
-        else Place is available
-            Route->>Database: Insert Registration and commit
-            Route-->>Student: Registration confirmation
+            Route-->>Student: HTTP 404
+        else Event exists and is in the future
+            Route->>Database: Check duplicate status and active registration count
+            alt Student is already registered
+                Route->>Database: Roll back transaction
+                Route-->>Student: Flash duplicate message and redirect
+            else Event is full
+                Route->>Database: Roll back transaction
+                Route-->>Student: Flash full-event message and redirect
+            else Place is available
+                Route->>Database: Insert Registration and commit
+                Route-->>Student: Registration confirmation and redirect
+            end
         end
     end
 ```
@@ -177,7 +186,8 @@ row-level locking use `SELECT ... FOR UPDATE` on the Event row.
 | Event | Stores volunteer opportunities | Positive capacity, future date enforced on creation, required owning Charity |
 | Registration | Connects a Student to an Event | Unique Student/Event pair, status restricted to `registered` or `cancelled` |
 
-Relationship rules are enforced with foreign keys and SQLAlchemy relationships:
+Relationships are declared with foreign keys and modelled with SQLAlchemy
+relationships:
 
 - One Charity `User` can own many `Event` records.
 - One Student `User` can have many `Registration` records.
