@@ -25,22 +25,30 @@ def load_user(user_id):
 
 
 def _validate_secret_key(app):
-    """Reject predictable keys outside the isolated test environment."""
+    """Enforce production key format outside the test environment."""
     if app.config.get("TESTING"):
         if not app.config.get("SECRET_KEY"):
             app.config["SECRET_KEY"] = "test-only-secret"
         return
 
-    secret_key = app.config.get("SECRET_KEY")
+    configured_secret = app.config.get("SECRET_KEY")
+    secret_key = (
+        configured_secret.strip()
+        if isinstance(configured_secret, str)
+        else None
+    )
     if (
-        not isinstance(secret_key, str)
+        secret_key is None
         or len(secret_key) < _MINIMUM_SECRET_KEY_LENGTH
         or secret_key == _SECRET_KEY_PLACEHOLDER
     ):
         raise RuntimeError(
-            "SECRET_KEY must be a non-placeholder random value of at least "
-            "32 characters. See README.md for setup instructions."
+            "SECRET_KEY must contain at least 32 characters after "
+            "surrounding whitespace is removed and cannot use the public "
+            "placeholder. See README.md for setup instructions."
         )
+
+    app.config["SECRET_KEY"] = secret_key
 
 
 def create_app(test_config=None):

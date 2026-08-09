@@ -34,13 +34,16 @@ def client(app):
     [
         None,
         "short-secret",
+        " " * 32,
+        ("a" * 31) + " ",
         "replace-with-a-random-secret-value",
+        "  replace-with-a-random-secret-value  ",
     ],
 )
 def test_non_test_app_rejects_missing_weak_or_placeholder_secret(
     unsafe_secret,
 ):
-    with pytest.raises(RuntimeError, match="non-placeholder random value"):
+    with pytest.raises(RuntimeError, match="surrounding whitespace"):
         create_app(
             {
                 "TESTING": False,
@@ -48,6 +51,22 @@ def test_non_test_app_rejects_missing_weak_or_placeholder_secret(
                 "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
             }
         )
+
+
+def test_non_test_app_normalises_surrounding_secret_whitespace():
+    valid_secret = "a" * 32
+    production_app = create_app(
+        {
+            "TESTING": False,
+            "SECRET_KEY": f"  {valid_secret}  ",
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+        }
+    )
+
+    assert production_app.config["SECRET_KEY"] == valid_secret
+    with production_app.app_context():
+        db.session.remove()
+        db.drop_all()
 
 
 @pytest.mark.parametrize(

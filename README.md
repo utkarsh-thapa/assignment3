@@ -49,7 +49,10 @@ python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
 
 Never commit `.env`. The application refuses to start outside testing when the
-key is missing, too short or still set to the public placeholder.
+key is missing, whitespace-only, shorter than 32 characters after surrounding
+whitespace is removed, or still set to the public placeholder. These checks do
+not prove that a key is unpredictable. Generating and supplying a
+cryptographically secure random value remains the operator's responsibility.
 
 ## Run the tests
 
@@ -80,7 +83,7 @@ guidance.
 | Role and ownership authorization | Students and Charities can perform only their permitted actions | Server-side checks block Students from creating events, block Charities from registering, return HTTP 403 to non-owning Charities and expose registration names only to the event owner. Passed. |
 | Input validation and CSRF | Invalid input and forged state-changing requests are rejected | WTForms validates length, email, role, date and capacity. Flask-WTF protects every POST form. Missing-token tests cover login, account creation, logout, event creation and event registration. Passed. |
 | SQL injection | SQL-like input is treated only as data | All application-data queries use SQLAlchemy expressions and bound values. The only static SQL statement is the parameter-free SQLite transaction command `BEGIN IMMEDIATE`; no user value is joined to it. Runtime injection evidence is recorded below. Passed. |
-| Secrets and sessions | Session signing key is unpredictable and cookies have safe local defaults | `SECRET_KEY` is loaded from `.env`; production rejects missing, short and placeholder values. Session cookies are `HttpOnly` and `SameSite=Lax`, and Flask-Login uses strong session protection. Passed. |
+| Secrets and sessions | The application rejects clearly unsafe key formats and the operator supplies a random key | `SECRET_KEY` is loaded from `.env`; production strips surrounding whitespace and rejects missing, whitespace-only, short and known-placeholder values. Secure randomness remains the operator's responsibility. Session cookies are `HttpOnly` and `SameSite=Lax`, and Flask-Login uses strong session protection. Passed. |
 | Repository hygiene | Secrets and local databases are not published | `.env`, `instance/`, `*.db`, `*.sqlite` and `*.sqlite3` are ignored. Current files and complete Git object names were checked; none of these private files are tracked. Passed. |
 | Error and output safety | Responses reveal no stack trace, query internals, password or executable user HTML | Login and validation failures use generic messages. Regression tests confirm no traceback, SQLAlchemy details or password disclosure, and Jinja escapes submitted HTML. Passed. |
 | Capacity integrity | Concurrent requests cannot overbook an event | Registration capacity is read and written inside one protected transaction; a two-client concurrency test confirms only one Student receives the final place. Passed. |
@@ -102,13 +105,16 @@ guidance.
 ### Finding, change and retest
 
 The audit found one configuration weakness: a non-test application previously
-accepted the public example `SECRET_KEY` or another very short key. That could
-weaken the integrity of session and CSRF signatures. Startup validation now
-requires a non-placeholder key of at least 32 characters, and regression tests
-cover missing, short and placeholder values.
+accepted the public example `SECRET_KEY`, another very short key or a key made
+only of whitespace. Those values could weaken the integrity of session and CSRF
+signatures. Startup validation now removes surrounding whitespace before
+checking length and rejects missing, whitespace-only, short and known-placeholder
+values. The application enforces these format checks; the operator remains
+responsible for generating the value with a cryptographically secure source.
+Regression tests cover each rejected case and accepted-key normalization.
 
 After the change, the focused security tests passed and the complete suite
-reported **69 passed**. Dependency consistency, Python compilation and diff
+reported **73 passed**. Dependency consistency, Python compilation and diff
 format checks are also part of the pull-request verification.
 
 This is a local prototype. Any future public deployment must additionally use
