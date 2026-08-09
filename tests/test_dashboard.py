@@ -221,8 +221,8 @@ def test_charity_sees_only_its_own_events_in_date_order(app, client):
     assert b"Sooner Own Event" in response.data
     assert b"Later Own Event" in response.data
     assert b"Other Charity Event" not in response.data
-    assert b"Manage event" in response.data
-    assert b"View details" not in response.data
+    assert b"View details" in response.data
+    assert b"Manage event" not in response.data
     assert response.data.index(b"Sooner Own Event") < response.data.index(
         b"Later Own Event"
     )

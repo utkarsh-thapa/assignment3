@@ -50,7 +50,7 @@
               {% else %}
                 <p><strong>Available places:</strong> {{ event.available_places }}</p>
               {% endif %}
-              <a class="button" href="{{ url_for('main.event_details', event_id=event.id) }}">Manage event</a>
+              <a class="button" href="{{ url_for('main.event_details', event_id=event.id) }}">View details</a>
             </article>
           {% endfor %}
         </div>
