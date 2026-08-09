@@ -1,0 +1,178 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #18332d;
+  background: #f4f8f5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem max(1.25rem, calc((100vw - 70rem) / 2));
+  color: #fff;
+  background: #145b49;
+}
+
+.brand {
+  color: inherit;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.page-shell {
+  width: min(70rem, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 3rem 0;
+}
+
+.hero {
+  max-width: 44rem;
+  margin-bottom: 2rem;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  line-height: 1.05;
+}
+
+.eyebrow {
+  color: #2c725f;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  padding: 1.75rem;
+  border: 1px solid #d5e5dd;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 0.75rem 2rem rgb(24 51 45 / 8%);
+}
+
+.account-summary {
+  max-width: 44rem;
+}
+
+form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+label,
+legend {
+  font-weight: 700;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  margin-bottom: 0.65rem;
+  padding: 0.8rem;
+  border: 1px solid #8ca9a0;
+  border-radius: 0.55rem;
+  font: inherit;
+}
+
+input:focus-visible,
+.button:focus-visible,
+a:focus-visible {
+  outline: 3px solid #f0b44d;
+  outline-offset: 2px;
+}
+
+fieldset {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.25rem 0 1rem;
+  padding: 0;
+  border: 0;
+}
+
+.radio-option {
+  font-weight: 500;
+}
+
+.button {
+  width: fit-content;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 0.55rem;
+  color: #fff;
+  background: #146b55;
+  font: inherit;
+  font-weight: 750;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: #0e4f3f;
+}
+
+.button-secondary {
+  border: 1px solid #fff;
+  background: transparent;
+}
+
+.field-help {
+  margin: -0.4rem 0 0.65rem;
+  color: #536a63;
+  font-size: 0.9rem;
+}
+
+.field-errors {
+  margin: -0.35rem 0 0.7rem;
+  padding-left: 1.25rem;
+  color: #a32626;
+}
+
+.notice {
+  padding: 0.9rem 1rem;
+  border-radius: 0.6rem;
+}
+
+.notice-success {
+  color: #15543f;
+  background: #dff3e9;
+}
+
+.notice-info {
+  color: #234d69;
+  background: #e1f0fa;
+}
+
+@media (max-width: 44rem) {
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-shell {
+    padding: 2rem 0;
+  }
+}

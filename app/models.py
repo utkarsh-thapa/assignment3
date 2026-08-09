@@ -1,7 +1,10 @@
+from flask_login import UserMixin
+from werkzeug.security import check_password_hash, generate_password_hash
+
 from app import db
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = "users"
     __table_args__ = (
         db.CheckConstraint(
@@ -26,6 +29,17 @@ class User(db.Model):
         "Registration",
         back_populates="student",
     )
+
+    def set_password(self, password):
+        """Store a secure hash instead of the readable password."""
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        """Return whether a submitted password matches the stored hash."""
+        return bool(self.password_hash) and check_password_hash(
+            self.password_hash,
+            password,
+        )
 
 
 class Event(db.Model):

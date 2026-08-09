@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Community Volunteer Board{% endblock %}
+
+{% block content %}
+  <section class="card account-summary">
+    <p class="eyebrow">{{ current_user.role|capitalize }} dashboard</p>
+    <h1>Welcome, {{ current_user.name }}</h1>
+    <p>Your secure account is ready. Event features will be added in the next backlog item.</p>
+  </section>
+{% endblock %}

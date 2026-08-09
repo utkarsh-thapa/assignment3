@@ -7,14 +7,16 @@ students to browse events and register for shifts.
 
 - Python and Flask
 - SQLite and Flask-SQLAlchemy
+- Flask-Login and Flask-WTF
 - HTML and CSS
 - Pytest
 
 ## Current status
 
-The initial Flask application structure is complete. The homepage route and a
-basic automated test are included. Database models, authentication and event
-features will be added in separate issues.
+The Flask application foundation, User, Event and Registration database models,
+and secure account authentication are complete. Students and Charities can
+create accounts, log in, log out and access a protected dashboard. Event
+creation, browsing and volunteer registration will be added in later issues.
 
 ## Run the application
 
@@ -28,9 +30,9 @@ cp .env.example .env
 python3 run.py
 ```
 
-Open <http://127.0.0.1:5000> in your browser.
+Open <http://127.0.0.1:5055> in your browser.
 
-Before adding authentication, replace the placeholder `SECRET_KEY` in your
+Before running the application, replace the placeholder `SECRET_KEY` in your
 local `.env` file with a securely generated random value. Never commit `.env`.
 
 ## Run the tests
@@ -41,6 +43,6 @@ python3 -m pytest
 
 ## AI-generated code review
 
-All AI-assisted code must be manually reviewed by both team members before it
-is committed or pushed. The team remains responsible for architecture,
-security, testing and ethical compliance.
+All AI-assisted code must be manually reviewed by both team members before its
+pull request is approved and merged. The team remains responsible for
+architecture, security, testing and ethical compliance.
