@@ -9,6 +9,9 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 csrf = CSRFProtect()
 
+_SECRET_KEY_PLACEHOLDER = "replace-with-a-random-secret-value"
+_MINIMUM_SECRET_KEY_LENGTH = 32
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -21,6 +24,33 @@ def load_user(user_id):
         return None
 
 
+def _validate_secret_key(app):
+    """Enforce production key format outside the test environment."""
+    if app.config.get("TESTING"):
+        if not app.config.get("SECRET_KEY"):
+            app.config["SECRET_KEY"] = "test-only-secret"
+        return
+
+    configured_secret = app.config.get("SECRET_KEY")
+    secret_key = (
+        configured_secret.strip()
+        if isinstance(configured_secret, str)
+        else None
+    )
+    if (
+        secret_key is None
+        or len(secret_key) < _MINIMUM_SECRET_KEY_LENGTH
+        or secret_key == _SECRET_KEY_PLACEHOLDER
+    ):
+        raise RuntimeError(
+            "SECRET_KEY must contain at least 32 characters after "
+            "surrounding whitespace is removed and cannot use the public "
+            "placeholder. See README.md for setup instructions."
+        )
+
+    app.config["SECRET_KEY"] = secret_key
+
+
 def create_app(test_config=None):
     """Create and configure the Flask application."""
     load_dotenv()
@@ -30,13 +60,7 @@ def create_app(test_config=None):
     if test_config:
         app.config.from_mapping(test_config)
 
-    if app.config.get("TESTING") and not app.config.get("SECRET_KEY"):
-        app.config["SECRET_KEY"] = "test-only-secret"
-
-    if not app.config.get("TESTING") and not app.config.get("SECRET_KEY"):
-        raise RuntimeError(
-            "SECRET_KEY is required. Copy .env.example to .env and set a random value."
-        )
+    _validate_secret_key(app)
 
     db.init_app(app)
     login_manager.init_app(app)
