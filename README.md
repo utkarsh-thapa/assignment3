@@ -261,8 +261,8 @@ database.
 | Charity registration list | Ownership, active status, event isolation and personal-data minimization |
 | Security audit | SQL injection, output escaping, cookie flags, secret validation and repository safety |
 
-Final end-to-end and mobile usability evidence will be recorded under Issue #12
-before the video is recorded.
+Final end-to-end and mobile usability testing was completed by both team
+members and recorded under [Issue #12](https://github.com/utkarsh-thapa/assignment3/issues/12).
 
 ## AI-generated code review
 
@@ -392,5 +392,6 @@ personal data.
 
 ## Video pitch and demo
 
-The final ten-minute video link will be added here after Issue #13 is completed.
-Both team members will speak, and the demonstration will use fictional data.
+[Watch the final Community Volunteer Board video pitch and demo](https://drive.google.com/file/d/1JVFdccLpTuXWiv3mQYKLMvf70RK_igOC/view?usp=sharing).
+The video is approximately 8 minutes 15 seconds long. Both team members speak
+and demonstrate their assigned workflows using fictional data.
